@@ -1,0 +1,3 @@
+provider_reference,transaction_reference,amount_minor,currency,status,occurred_at
+mock_funding-pay-001,TX-sample-001,200000,NGN,successful,2026-07-10T09:00:00Z
+mock_funding-pay-002,TX-sample-002,150000,NGN,successful,2026-07-10T09:05:00Z

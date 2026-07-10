@@ -1,0 +1,1 @@
+const {createApp}=require("./app");const {getConfig,createLogger}=require("@wallet/common");const config=getConfig("reconciliation-service");const {app}=createApp({config,logger:createLogger("reconciliation-service")});app.listen(config.port,()=>createLogger("reconciliation-service").info({port:config.port},"reconciliation-service listening"));

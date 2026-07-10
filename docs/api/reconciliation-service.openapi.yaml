@@ -1,0 +1,12 @@
+openapi: 3.0.3
+info: { title: Reconciliation Service API, version: 0.1.0 }
+servers: [{ url: http://localhost:3013 }]
+security: [{ bearerAuth: [] }]
+paths:
+  /health/live: { get: { security: [], responses: { '200': { description: Alive } } } }
+  /health/ready: { get: { security: [], responses: { '200': { description: Ready } } } }
+  /reconciliation/runs: { post: { summary: Import and reconcile CSV or JSON provider settlement, responses: { '201': { description: Batch result }, '422': { description: Failure } } } }
+  /reconciliation/runs/{id}: { get: { summary: Get batch, responses: { '200': { description: Batch }, '404': { description: Not found } } } }
+  /reconciliation/runs/{id}/exceptions: { get: { summary: List exceptions, responses: { '200': { description: Exceptions } } } }
+  /reconciliation/runs/{id}/report: { get: { summary: Export CSV report, responses: { '200': { description: CSV report, content: { text/csv: {} } } } } }
+components: { securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } } }

@@ -15,7 +15,8 @@
     "services/transaction-service",
     "services/payment-integration-service",
     "services/notification-service",
-    "services/audit-service"
+    "services/audit-service",
+    "services/reconciliation-service"
   ],
   "scripts": {
     "test": "npm run test --workspaces --if-present",
@@ -33,6 +34,7 @@
     ,"start:payments": "npm --workspace services/payment-integration-service start"
     ,"start:notifications": "npm --workspace services/notification-service start"
     ,"start:audit": "npm --workspace services/audit-service start"
+    ,"start:reconciliation": "npm --workspace services/reconciliation-service start"
   },
   "engines": {
     "node": ">=20"
