@@ -7,6 +7,8 @@ output "log_group_name" { value=aws_cloudwatch_log_group.this.name }
 variable "runbook_base_url" { type=string default="https://github.com/example/digital-wallet-agent/tree/main/docs/runbooks" }
 variable "alarm_topic_arn" { type=string default=null }
 variable "service_names" { type=set(string) default=[] }
+variable "monthly_budget_usd" { type=number default=0 }
+variable "billing_alarm_email" { type=string default=null }
 
 resource "aws_cloudwatch_metric_alarm" "api_5xx" {
   for_each=var.service_names
@@ -40,3 +42,18 @@ resource "aws_cloudwatch_metric_alarm" "dlq" {
 }
 resource "aws_cloudwatch_metric_alarm" "rds_cpu" { alarm_name="${var.name}-rds-cpu" namespace="AWS/RDS" metric_name="CPUUtilization" statistic="Average" period=300 evaluation_periods=3 threshold=80 comparison_operator="GreaterThanThreshold" alarm_description="RDS CPU high. Runbook: ${var.runbook_base_url}/rds-connection-exhaustion.md" treat_missing_data="notBreaching" alarm_actions=var.alarm_topic_arn==null?[]:[var.alarm_topic_arn] }
 resource "aws_cloudwatch_metric_alarm" "rds_storage" { alarm_name="${var.name}-rds-storage" namespace="AWS/RDS" metric_name="FreeStorageSpace" statistic="Minimum" period=300 evaluation_periods=2 threshold=10737418240 comparison_operator="LessThanThreshold" alarm_description="RDS storage pressure. Runbook: ${var.runbook_base_url}/rds-storage-pressure.md" treat_missing_data="breaching" alarm_actions=var.alarm_topic_arn==null?[]:[var.alarm_topic_arn] }
+resource "aws_cloudwatch_metric_alarm" "estimated_charges" {
+  count=var.monthly_budget_usd>0?1:0
+  alarm_name="${var.name}-estimated-charges"
+  namespace="AWS/Billing"
+  metric_name="EstimatedCharges"
+  dimensions={Currency="USD"}
+  statistic="Maximum"
+  period=21600
+  evaluation_periods=1
+  threshold=var.monthly_budget_usd
+  comparison_operator="GreaterThanOrEqualToThreshold"
+  alarm_description="Estimated AWS charges exceeded budget. Review FinOps report and remove unused resources."
+  treat_missing_data="notBreaching"
+  alarm_actions=var.alarm_topic_arn==null?[]:[var.alarm_topic_arn]
+}

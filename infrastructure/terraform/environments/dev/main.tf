@@ -1,7 +1,7 @@
 terraform { required_version=">= 1.6.0"
 required_providers { aws={source="hashicorp/aws",version="~> 5.0"} } }
 provider "aws" { region=var.aws_region }
-locals { tags={Project="digital-wallet",Environment=var.environment,ManagedBy="terraform"} }
+locals { tags={Project="digital-wallet",Environment=var.environment,ManagedBy="terraform",Owner="platform",CostCenter="wallet-platform",DataClassification="internal"} }
 module "vpc" { source="../../modules/vpc" name="${var.name}-vpc" cidr=var.vpc_cidr azs=var.azs tags=local.tags }
 module "kms" { source="../../modules/kms" name="${var.name}" tags=local.tags }
 module "rds" { source="../../modules/rds" name="${var.name}-postgres" subnet_ids=module.vpc.data_subnet_ids vpc_id=module.vpc.vpc_id kms_key_arn=module.kms.arn instance_class=var.db_instance_class multi_az=var.multi_az deletion_protection=var.deletion_protection password=var.db_password tags=local.tags }
