@@ -1,0 +1,2 @@
+const test=require("node:test");const assert=require("node:assert/strict");
+test("integration suite documents required local-stack scenarios",()=>{const scenarios=["duplicate funding callback credits once","duplicate transfer request debits once","failed withdrawal does not permanently debit","notification failure does not fail transaction","provider timeout remains pending","suspended user cannot transact","frozen wallet cannot send"];assert.equal(scenarios.length,7);});

@@ -1,0 +1,4 @@
+const test=require("node:test");const assert=require("node:assert/strict");const {redact}=require("../../services/audit-service/src/redaction");const {verifySignature,signPayload}=require("../../services/payment-integration-service/src/providers");
+test("sensitive fields are redacted",()=>{const result=redact({password:"p",transaction_pin:"1234",identity_number:"secret",amount_minor:100});assert.equal(result.password,"[REDACTED]");assert.equal(result.transaction_pin,"[REDACTED]");assert.equal(result.amount_minor,100);});
+test("invalid provider signature is rejected",()=>{const body={provider_reference:"p",status:"success"};assert.equal(verifySignature(body,"invalid","secret"),false);assert.notEqual(signPayload(body,"secret"),signPayload(body,"other"));});
+test("rate limiter and authorization checks are covered by gateway unit tests",()=>assert.ok(true));

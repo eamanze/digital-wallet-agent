@@ -1,0 +1,3 @@
+const test=require("node:test");const assert=require("node:assert/strict");const {renderMetrics}=require("../../packages/common/src/metrics");const {traceContext}=require("../../packages/common/src/tracing");
+test("metrics render Prometheus text",()=>{const metrics=require("../../packages/common/src/metrics");metrics.increment("test_requests_total",{service:"unit"});assert.match(renderMetrics(),/test_requests_total/);});
+test("trace context continues W3C traceparent",()=>{const req={get:(name)=>name==="traceparent"?"00-0123456789abcdef0123456789abcdef-0123456789abcdef-01":""};const trace=traceContext(req);assert.equal(trace.traceId,"0123456789abcdef0123456789abcdef");assert.match(trace.traceparent,/^00-[0-9a-f]{32}-[0-9a-f]{16}-01$/);});

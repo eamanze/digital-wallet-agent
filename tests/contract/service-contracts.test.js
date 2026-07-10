@@ -1,0 +1,3 @@
+const test=require("node:test");const assert=require("node:assert/strict");const {normalizeError}=require("../../services/api-gateway/src/proxy");
+test("gateway contract normalizes upstream errors",()=>{const response=normalizeError(500,{error:{code:"INTERNAL",message:"database detail"}},"req-1");assert.deepEqual(Object.keys(response),["request_id","status","data","error"]);assert.equal(response.error.message,"Upstream service unavailable");});
+test("provider contract exposes normalized statuses",()=>{const {normalizeResponse}=require("../../services/payment-integration-service/src/providers");assert.equal(normalizeResponse({status:"success",provider_reference:"p"}).normalized_status,"successful");});
