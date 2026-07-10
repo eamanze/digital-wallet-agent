@@ -1,0 +1,29 @@
+openapi: 3.0.3
+info: { title: Transaction Service API, version: 0.1.0 }
+servers: [{ url: http://localhost:3009 }]
+security: [{ bearerAuth: [] }]
+paths:
+  /health/live: { get: { security: [], responses: { '200': { description: Alive } } } }
+  /health/ready: { get: { security: [], responses: { '200': { description: Ready }, '503': { description: Not ready } } } }
+  /transactions/transfers: { post: { summary: Wallet transfer, parameters: [{ in: header, name: Idempotency-Key, required: true, schema: { type: string } }], requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Transfer' } } } }, responses: { '200': { description: Transaction }, '201': { description: Created }, '409': { description: Idempotency conflict } } } }
+  /transactions/fund-wallet: { post: { summary: Initiate wallet funding, responses: { '201': { description: Pending transaction } } } }
+  /transactions/withdrawals: { post: { summary: Initiate bank withdrawal, responses: { '201': { description: Pending transaction } } } }
+  /transactions/bills: { post: { summary: Initiate bill payment, responses: { '201': { description: Pending transaction } } } }
+  /transactions/airtime: { post: { summary: Initiate airtime purchase, responses: { '201': { description: Pending transaction } } } }
+  /transactions: { get: { summary: Authenticated transaction history, responses: { '200': { description: Transactions } } } }
+  /transactions/{id}: { get: { summary: Get transaction status, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], responses: { '200': { description: Transaction }, '404': { description: Not found } } } }
+  /transactions/{id}/reverse: { post: { summary: Request compensating ledger reversal, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], responses: { '200': { description: Reversed }, '422': { description: Not allowed } } } }
+  /providers/{provider}/callbacks: { post: { security: [], summary: Provider callback after adapter signature verification, parameters: [{ in: path, name: provider, required: true, schema: { type: string } }], responses: { '200': { description: Accepted }, '401': { description: Invalid signature } } } }
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  schemas:
+    Transfer:
+      type: object
+      required: [source_wallet_id, destination_wallet_id, amount_minor, currency, pin]
+      properties:
+        source_wallet_id: { type: string, format: uuid }
+        destination_wallet_id: { type: string, format: uuid }
+        amount_minor: { type: integer, minimum: 1 }
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        pin: { type: string, minLength: 4, maxLength: 6, writeOnly: true }
+        channel: { type: string }

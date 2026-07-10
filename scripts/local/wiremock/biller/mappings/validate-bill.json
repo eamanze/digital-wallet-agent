@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/billers/validate"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "status": "valid",
+      "provider": "mock-biller",
+      "customer_name": "Local Test Customer",
+      "customer_reference": "bill-customer-local"
+    }
+  }
+}
+

@@ -1,0 +1,140 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: wallet-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-wallet_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-wallet}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wallet_dev_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/db/migrations:/workspace/infrastructure/db/migrations:ro
+      - ./scripts/seed:/workspace/scripts/seed:ro
+      - ./scripts/local/postgres-init.sh:/docker-entrypoint-initdb.d/000-postgres-init.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wallet} -d ${POSTGRES_DB:-wallet_dev}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - wallet-local
+
+  redis:
+    image: redis:7-alpine
+    container_name: wallet-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - wallet-local
+
+  localstack:
+    image: localstack/localstack:3.8
+    container_name: wallet-localstack
+    environment:
+      AWS_DEFAULT_REGION: ${AWS_REGION:-us-east-1}
+      EDGE_PORT: 4566
+      SERVICES: sqs,s3,secretsmanager
+      DEBUG: ${LOCALSTACK_DEBUG:-0}
+    ports:
+      - "${LOCALSTACK_PORT:-4566}:4566"
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      - wallet-local
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: wallet-mailhog
+    ports:
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
+      - "${MAILHOG_UI_PORT:-8025}:8025"
+    networks:
+      - wallet-local
+
+  mock-sms-provider:
+    image: wiremock/wiremock:3.9.1
+    container_name: wallet-mock-sms-provider
+    command: ["--global-response-templating", "--verbose"]
+    ports:
+      - "${MOCK_SMS_PORT:-8091}:8080"
+    volumes:
+      - ./scripts/local/wiremock/sms:/home/wiremock:ro
+    networks:
+      - wallet-local
+
+  mock-payment-provider:
+    image: wiremock/wiremock:3.9.1
+    container_name: wallet-mock-payment-provider
+    command: ["--global-response-templating", "--verbose"]
+    ports:
+      - "${MOCK_PAYMENT_PORT:-8092}:8080"
+    volumes:
+      - ./scripts/local/wiremock/payment:/home/wiremock:ro
+    networks:
+      - wallet-local
+
+  mock-biller-provider:
+    image: wiremock/wiremock:3.9.1
+    container_name: wallet-mock-biller-provider
+    command: ["--global-response-templating", "--verbose"]
+    ports:
+      - "${MOCK_BILLER_PORT:-8093}:8080"
+    volumes:
+      - ./scripts/local/wiremock/biller:/home/wiremock:ro
+    networks:
+      - wallet-local
+
+  mock-airtime-provider:
+    image: wiremock/wiremock:3.9.1
+    container_name: wallet-mock-airtime-provider
+    command: ["--global-response-templating", "--verbose"]
+    ports:
+      - "${MOCK_AIRTIME_PORT:-8094}:8080"
+    volumes:
+      - ./scripts/local/wiremock/airtime:/home/wiremock:ro
+    networks:
+      - wallet-local
+
+  opensearch:
+    image: opensearchproject/opensearch:2.17.1
+    container_name: wallet-opensearch
+    profiles: ["opensearch"]
+    environment:
+      discovery.type: single-node
+      plugins.security.disabled: "true"
+      OPENSEARCH_INITIAL_ADMIN_PASSWORD: ${OPENSEARCH_INITIAL_ADMIN_PASSWORD:-LocalDevOnly123!}
+      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "${OPENSEARCH_PORT:-9200}:9200"
+      - "${OPENSEARCH_TRANSPORT_PORT:-9600}:9600"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    networks:
+      - wallet-local
+
+networks:
+  wallet-local:
+    name: wallet-local
+
+volumes:
+  postgres_data:
+  redis_data:
+  localstack_data:
+  opensearch_data:
+

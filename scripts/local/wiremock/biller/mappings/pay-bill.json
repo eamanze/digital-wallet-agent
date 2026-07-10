@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/billers/pay"
+  },
+  "response": {
+    "status": 202,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "status": "pending",
+      "provider": "mock-biller",
+      "provider_reference": "bill-{{randomValue type='UUID'}}"
+    }
+  }
+}
+

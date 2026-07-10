@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/payouts"
+  },
+  "response": {
+    "status": 202,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "status": "pending",
+      "provider": "mock-payment",
+      "provider_reference": "payout-{{randomValue type='UUID'}}"
+    }
+  }
+}
+

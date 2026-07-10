@@ -1,0 +1,61 @@
+openapi: 3.0.3
+info:
+  title: Fee Service API
+  version: 0.1.0
+servers:
+  - url: http://localhost:3007
+security:
+  - bearerAuth: []
+paths:
+  /health/live:
+    get:
+      security: []
+      responses: { "200": { description: Alive } }
+  /health/ready:
+    get:
+      security: []
+      responses: { "200": { description: Ready }, "503": { description: Not ready } }
+  /fees/quote:
+    post:
+      summary: Create or replay a deterministic, version-pinned fee quote.
+      parameters:
+        - { in: header, name: Idempotency-Key, required: true, schema: { type: string, minLength: 8 } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/FeeQuoteRequest" } } } }
+      responses: { "201": { description: Created }, "200": { description: Replay }, "409": { description: Conflict } }
+  /fees/calculate:
+    post:
+      summary: Alias for fee quote creation.
+      parameters:
+        - { in: header, name: Idempotency-Key, required: true, schema: { type: string } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/FeeQuoteRequest" } } } }
+      responses: { "201": { description: Created } }
+  /fees/config:
+    get:
+      summary: Get active fee configuration.
+      responses: { "200": { description: Active version and rules } }
+    post:
+      summary: Activate an audited configuration; requires finance_admin role.
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/FeeConfig" } } } }
+      responses: { "201": { description: Activated }, "403": { description: Missing role } }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  schemas:
+    FeeQuoteRequest:
+      type: object
+      required: [transaction_type, channel, amount_minor, currency]
+      properties:
+        user_id: { type: string, format: uuid }
+        transaction_reference: { type: string }
+        transaction_type: { type: string, enum: [wallet_transfer, withdrawal, bill_payment, airtime_purchase] }
+        channel: { type: string }
+        amount_minor: { type: integer, minimum: 1 }
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        kyc_tier: { type: string, enum: [tier_0, tier_1, tier_2, tier_3] }
+    FeeConfig:
+      type: object
+      required: [description, reason, rules]
+      properties:
+        description: { type: string }
+        reason: { type: string }
+        rules: { type: array, minItems: 1, items: { type: object } }

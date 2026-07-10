@@ -1,0 +1,2 @@
+const test = require("node:test"); const assert = require("node:assert/strict"); const { createApp } = require("../src/app"); const { inject } = require("../../../tests/helpers/inject-express");
+test("notification-service live health returns ok", async () => { const { app } = createApp({ config: { serviceName: "notification-service", jwtAccessSecret: "x", jwtRefreshSecret: "x" }, pool: { query: async () => ({ rows: [] }) }, logger: { warn() {} } }); const response = await inject(app, { method: "GET", path: "/health/live" }); assert.equal(response.status, 200); });

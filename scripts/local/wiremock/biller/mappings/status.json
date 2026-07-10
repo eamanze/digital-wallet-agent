@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathTemplate": "/billers/status/{reference}"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "status": "successful",
+      "provider": "mock-biller",
+      "provider_reference": "{{request.pathSegments.[2]}}"
+    }
+  }
+}
+

@@ -1,0 +1,38 @@
+openapi: 3.0.3
+info: { title: Fraud Service API, version: 0.1.0 }
+servers: [{ url: http://localhost:3008 }]
+security: [{ bearerAuth: [] }]
+paths:
+  /health/live: { get: { security: [], responses: { '200': { description: Alive } } } }
+  /health/ready: { get: { security: [], responses: { '200': { description: Ready }, '503': { description: Not ready } } } }
+  /risk/evaluate:
+    post:
+      summary: Evaluate transaction or risk context.
+      parameters: [{ in: header, name: Idempotency-Key, required: true, schema: { type: string, minLength: 8 } }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Evaluation' } } } }
+      responses: { '201': { description: Decision }, '200': { description: Idempotent replay }, '409': { description: Conflict } }
+  /risk/evaluate/login: { post: { summary: Evaluate login risk, responses: { '201': { description: Decision } } } }
+  /risk/evaluate/device: { post: { summary: Evaluate device risk, responses: { '201': { description: Decision } } } }
+  /risk/evaluate/ip: { post: { summary: Evaluate IP risk, responses: { '201': { description: Decision } } } }
+  /risk/evaluate/velocity: { post: { summary: Evaluate velocity risk, responses: { '201': { description: Decision } } } }
+  /risk/cases: { get: { summary: List fraud cases, responses: { '200': { description: Cases } } } }
+  /risk/cases/{reference}: { get: { summary: Get fraud case, parameters: [{ in: path, name: reference, required: true, schema: { type: string } }], responses: { '200': { description: Case }, '404': { description: Not found } } } }
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  schemas:
+    Evaluation:
+      type: object
+      required: [evaluation_type]
+      properties:
+        evaluation_type: { type: string, enum: [transaction, login, device, ip, velocity] }
+        user_id: { type: string, format: uuid }
+        transaction_reference: { type: string }
+        amount_minor: { type: integer, minimum: 1 }
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        new_device: { type: boolean }
+        suspicious_ip: { type: boolean }
+        failed_pin_attempts: { type: integer, minimum: 0 }
+        transaction_count_window: { type: integer, minimum: 0 }
+        unusual_amount: { type: boolean }
+        device_account_count: { type: integer, minimum: 0 }
+        recent_funding_withdrawal_count: { type: integer, minimum: 0 }

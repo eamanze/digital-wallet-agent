@@ -1,0 +1,168 @@
+openapi: 3.0.3
+info:
+  title: KYC Service API
+  version: 0.1.0
+servers:
+  - url: http://localhost:3003
+security:
+  - bearerAuth: []
+paths:
+  /health/live:
+    get:
+      security: []
+      responses:
+        "200":
+          description: Service is alive.
+  /health/ready:
+    get:
+      security: []
+      responses:
+        "200":
+          description: Service dependencies are ready.
+        "503":
+          description: Service is not ready.
+  /kyc/profile:
+    post:
+      summary: Submit or resubmit KYC profile.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KycProfileSubmit"
+      responses:
+        "201":
+          description: KYC profile submitted.
+        "400":
+          description: Invalid payload.
+  /kyc/documents:
+    post:
+      summary: Store KYC document metadata and encrypted S3 reference.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KycDocument"
+      responses:
+        "201":
+          description: Document metadata stored.
+        "404":
+          description: KYC profile not found.
+  /kyc/status:
+    get:
+      summary: Get authenticated user's KYC status and document references.
+      responses:
+        "200":
+          description: KYC status.
+        "404":
+          description: KYC profile not found.
+  /kyc/provider/verify:
+    post:
+      summary: Request provider verification or mock provider decision.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KycProviderVerify"
+      responses:
+        "202":
+          description: Provider verification accepted.
+  /admin/kyc/{profileId}/decision:
+    post:
+      summary: Apply manual KYC decision.
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KycDecision"
+      responses:
+        "200":
+          description: Decision applied.
+        "404":
+          description: KYC profile not found.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    KycProfileSubmit:
+      type: object
+      required: [legal_name]
+      properties:
+        legal_name:
+          type: string
+        date_of_birth:
+          type: string
+          format: date
+        country_code:
+          type: string
+          minLength: 2
+          maxLength: 2
+        identity_type:
+          type: string
+        identity_number:
+          type: string
+          description: Accepted by API for encryption/tokenization. Must not be logged.
+        requested_tier:
+          type: string
+          enum: [tier_1, tier_2, tier_3]
+    KycDocument:
+      type: object
+      required: [document_type, s3_bucket, s3_object_key, checksum_sha256, kms_key_id]
+      properties:
+        document_type:
+          type: string
+        s3_bucket:
+          type: string
+        s3_object_key:
+          type: string
+        checksum_sha256:
+          type: string
+        kms_key_id:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+    KycProviderVerify:
+      type: object
+      properties:
+        provider_name:
+          type: string
+        provider_reference:
+          type: string
+        mock_decision:
+          type: string
+          enum: [approved, rejected, manual_review]
+        tier:
+          type: string
+          enum: [tier_1, tier_2, tier_3]
+        reason:
+          type: string
+    KycDecision:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [approved, rejected, manual_review]
+        tier:
+          type: string
+          enum: [tier_1, tier_2, tier_3]
+        reason:
+          type: string
+        reviewed_by_admin_user_id:
+          type: string
+          format: uuid
+

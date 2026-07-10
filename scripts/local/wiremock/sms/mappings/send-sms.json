@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/sms/send"
+  },
+  "response": {
+    "status": 202,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "status": "accepted",
+      "provider": "mock-sms",
+      "message_id": "sms-{{randomValue type='UUID'}}"
+    }
+  }
+}
+

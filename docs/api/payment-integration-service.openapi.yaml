@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info: { title: Payment Integration Service API, version: 0.1.0 }
+servers: [{ url: http://localhost:3010 }]
+security: [{ bearerAuth: [] }]
+paths:
+  /health/live: { get: { security: [], responses: { '200': { description: Alive } } } }
+  /health/ready: { get: { security: [], responses: { '200': { description: Ready } } } }
+  /payments/initiate:
+    post:
+      summary: Initiate an idempotent provider operation.
+      parameters: [{ in: header, name: Idempotency-Key, required: true, schema: { type: string, minLength: 8 } }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/InitiateRequest' } } } }
+      responses: { '201': { description: Provider attempt }, '409': { description: Idempotency conflict }, '502': { description: Provider failure } }
+  /payments/verify: { post: { summary: Verify provider status, responses: { '200': { description: Normalized result } } } }
+  /providers/{provider}/status/{reference}: { get: { summary: Poll provider status, responses: { '200': { description: Normalized result } } } }
+  /providers/{provider}/callbacks: { post: { security: [], summary: Verify and deduplicate callback, parameters: [{ in: header, name: X-Provider-Signature, required: true, schema: { type: string } }], responses: { '200': { description: Accepted or duplicate }, '401': { description: Invalid signature } } } }
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  schemas:
+    InitiateRequest:
+      type: object
+      required: [provider_type, provider_name, internal_reference, amount_minor, currency]
+      properties:
+        provider_type: { type: string, enum: [wallet_funding, bank_withdrawal, bill_payment, airtime] }
+        provider_name: { type: string }
+        transaction_request_id: { type: string, format: uuid }
+        internal_reference: { type: string }
+        amount_minor: { type: integer, minimum: 1 }
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        payload: { type: object }

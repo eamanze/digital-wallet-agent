@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/payments/fund-wallet"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "status": "pending",
+      "provider": "mock-payment",
+      "provider_reference": "pay-{{randomValue type='UUID'}}",
+      "authorization_url": "http://localhost:8092/checkout/mock"
+    }
+  }
+}
+

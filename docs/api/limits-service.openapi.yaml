@@ -1,0 +1,80 @@
+openapi: 3.0.3
+info:
+  title: Limits Service API
+  version: 0.1.0
+servers:
+  - url: http://localhost:3006
+security:
+  - bearerAuth: []
+paths:
+  /health/live:
+    get:
+      security: []
+      responses: { "200": { description: Alive } }
+  /health/ready:
+    get:
+      security: []
+      responses: { "200": { description: Ready }, "503": { description: Not ready } }
+  /limits/evaluate:
+    post:
+      summary: Evaluate limits without reserving usage.
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/LimitContext" } } } }
+      responses: { "200": { description: Allow or deny decision } }
+  /limits/remaining:
+    get:
+      summary: Get remaining limits for a proposed context.
+      parameters:
+        - { in: query, name: user_id, required: true, schema: { type: string, format: uuid } }
+        - { in: query, name: kyc_tier, required: true, schema: { type: string } }
+        - { in: query, name: transaction_reference, required: true, schema: { type: string } }
+        - { in: query, name: transaction_type, required: true, schema: { type: string } }
+        - { in: query, name: channel, required: true, schema: { type: string } }
+        - { in: query, name: currency, required: true, schema: { type: string } }
+      responses: { "200": { description: Remaining amount and count by window } }
+  /limits/reservations:
+    post:
+      summary: Atomically evaluate and reserve limits before transaction creation.
+      parameters:
+        - { in: header, name: Idempotency-Key, required: true, schema: { type: string, minLength: 8 } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/LimitContext" } } } }
+      responses: { "201": { description: Reserved }, "200": { description: Replay }, "409": { description: Conflict }, "422": { description: Denied } }
+  /limits/reservations/{reference}/commit:
+    post:
+      summary: Commit usage after success.
+      parameters: [{ in: path, name: reference, required: true, schema: { type: string } }]
+      responses: { "200": { description: Committed }, "409": { description: Invalid state } }
+  /limits/reservations/{reference}/release:
+    post:
+      summary: Release usage after terminal failure.
+      parameters: [{ in: path, name: reference, required: true, schema: { type: string } }]
+      responses: { "200": { description: Released }, "409": { description: Invalid state } }
+  /limits/config:
+    get:
+      summary: Get active configuration.
+      responses: { "200": { description: Active version and rules } }
+    post:
+      summary: Activate an audited configuration; requires risk_admin role.
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/LimitConfig" } } } }
+      responses: { "201": { description: Activated }, "403": { description: Missing role } }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  schemas:
+    LimitContext:
+      type: object
+      required: [user_id, kyc_tier, transaction_reference, transaction_type, channel, amount_minor, currency]
+      properties:
+        user_id: { type: string, format: uuid }
+        kyc_tier: { type: string, enum: [tier_0, tier_1, tier_2, tier_3] }
+        transaction_reference: { type: string }
+        transaction_type: { type: string, enum: [wallet_transfer, withdrawal, bill_payment, airtime_purchase, wallet_funding] }
+        channel: { type: string }
+        amount_minor: { type: integer, minimum: 1 }
+        currency: { type: string, minLength: 3, maxLength: 3 }
+    LimitConfig:
+      type: object
+      required: [description, reason, rules]
+      properties:
+        description: { type: string }
+        reason: { type: string }
+        rules: { type: array, minItems: 1, items: { type: object } }

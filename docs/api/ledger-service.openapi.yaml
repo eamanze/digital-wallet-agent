@@ -1,0 +1,205 @@
+openapi: 3.0.3
+info:
+  title: Ledger Service API
+  version: 0.1.0
+servers:
+  - url: http://localhost:3004
+paths:
+  /health/live:
+    get:
+      responses:
+        "200":
+          description: Service is alive.
+  /health/ready:
+    get:
+      responses:
+        "200":
+          description: Service dependencies are ready.
+        "503":
+          description: Service is not ready.
+  /ledger/accounts:
+    post:
+      summary: Create a ledger account.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LedgerAccountCreate"
+      responses:
+        "201":
+          description: Ledger account created.
+  /ledger/accounts/{id}:
+    get:
+      summary: Get a ledger account.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Ledger account.
+        "404":
+          description: Ledger account not found.
+  /ledger/accounts/{id}/balance:
+    get:
+      summary: Compute account balance from posted ledger entries.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Ledger-derived balance.
+  /ledger/accounts/{id}/entries:
+    get:
+      summary: Get account ledger entries.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Ledger entries.
+  /ledger/transactions:
+    post:
+      summary: Create a posted balanced ledger transaction.
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LedgerTransactionCreate"
+      responses:
+        "201":
+          description: Ledger transaction posted.
+        "422":
+          description: Transaction is unbalanced.
+  /ledger/transactions/{reference}:
+    get:
+      summary: Get a ledger transaction by ledger reference or business reference.
+      parameters:
+        - in: path
+          name: reference
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Ledger transaction.
+        "404":
+          description: Ledger transaction not found.
+  /ledger/transactions/{reference}/reverse:
+    post:
+      summary: Reverse a posted ledger transaction using compensating entries.
+      parameters:
+        - in: path
+          name: reference
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LedgerReversal"
+      responses:
+        "201":
+          description: Reversal ledger transaction posted.
+components:
+  schemas:
+    LedgerAccountCreate:
+      type: object
+      required: [account_code, account_name, account_type, owner_type, currency]
+      properties:
+        account_code:
+          type: string
+        account_name:
+          type: string
+        account_type:
+          type: string
+          enum: [asset, liability, revenue, expense, settlement, suspense]
+        owner_type:
+          type: string
+          enum: [platform, user, provider, bank, biller, system]
+        owner_id:
+          type: string
+          format: uuid
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+    LedgerEntry:
+      type: object
+      required: [account_id, entry_type, amount_minor, currency]
+      properties:
+        account_id:
+          type: string
+          format: uuid
+        entry_type:
+          type: string
+          enum: [debit, credit]
+        amount_minor:
+          type: integer
+          minimum: 1
+        currency:
+          type: string
+    LedgerTransactionCreate:
+      type: object
+      required: [transaction_type, currency, entries]
+      properties:
+        ledger_reference:
+          type: string
+        transaction_reference:
+          type: string
+        transaction_type:
+          type: string
+          enum: [funding, transfer, withdrawal, bill_payment, airtime_purchase, fee, settlement_adjustment, manual_adjustment]
+        currency:
+          type: string
+        description:
+          type: string
+        entries:
+          type: array
+          minItems: 2
+          items:
+            $ref: "#/components/schemas/LedgerEntry"
+    LedgerReversal:
+      type: object
+      properties:
+        ledger_reference:
+          type: string
+        transaction_reference:
+          type: string
+        reason:
+          type: string
+

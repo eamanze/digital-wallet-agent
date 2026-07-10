@@ -1,0 +1,13 @@
+openapi: 3.0.3
+info: { title: Notification Service API, version: 0.1.0 }
+servers: [{ url: http://localhost:3011 }]
+security: [{ bearerAuth: [] }]
+paths:
+  /health/live: { get: { security: [], responses: { '200': { description: Alive } } } }
+  /health/ready: { get: { security: [], responses: { '200': { description: Ready } } } }
+  /events: { post: { summary: Consume a supported domain event, responses: { '200': { description: Notification jobs }, '400': { description: Invalid event } } } }
+  /notifications: { get: { summary: List authenticated user's notifications, responses: { '200': { description: Notifications } } } }
+  /notifications/{id}: { get: { summary: Get notification status, responses: { '200': { description: Notification }, '404': { description: Not found } } } }
+  /notifications/{id}/retry: { post: { summary: Retry a failed notification, responses: { '200': { description: Updated notification } } } }
+  /preferences: { get: { summary: Get notification preferences, responses: { '200': { description: Preferences } } }, patch: { summary: Update notification preferences, responses: { '200': { description: Preferences } } } }
+components: { securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } } }

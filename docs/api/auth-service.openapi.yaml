@@ -1,0 +1,165 @@
+openapi: 3.0.3
+info:
+  title: Auth Service API
+  version: 0.1.0
+servers:
+  - url: http://localhost:3001
+paths:
+  /health/live:
+    get:
+      responses:
+        "200":
+          description: Service is alive.
+  /health/ready:
+    get:
+      responses:
+        "200":
+          description: Service dependencies are ready.
+        "503":
+          description: Service is not ready.
+  /auth/register:
+    post:
+      summary: Register a user and auth credential.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: Registered.
+        "400":
+          description: Invalid payload or weak password.
+        "409":
+          description: Duplicate or failed registration.
+  /auth/login:
+    post:
+      summary: Login with password and device fingerprint.
+      responses:
+        "200":
+          description: Token response.
+        "202":
+          description: MFA required for new or risky device.
+        "401":
+          description: Invalid credentials.
+        "429":
+          description: Rate limited.
+  /auth/refresh:
+    post:
+      summary: Rotate refresh token and issue a new access token.
+      responses:
+        "200":
+          description: Token response.
+        "401":
+          description: Invalid refresh token or reuse detected.
+  /auth/logout:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Revoke current session.
+      responses:
+        "200":
+          description: Logged out.
+  /auth/otp/request:
+    post:
+      summary: Request an OTP for a specific purpose.
+      responses:
+        "202":
+          description: OTP queued.
+        "429":
+          description: Rate limited.
+  /auth/otp/verify:
+    post:
+      summary: Verify a purpose-specific OTP.
+      responses:
+        "200":
+          description: OTP verified.
+        "400":
+          description: OTP invalid or expired.
+  /auth/mfa/setup:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Start MFA factor setup.
+      responses:
+        "201":
+          description: MFA setup pending.
+  /auth/mfa/verify:
+    post:
+      summary: Verify MFA challenge or factor.
+      responses:
+        "200":
+          description: MFA verified and token response returned when used for login.
+        "400":
+          description: MFA verification failed.
+  /auth/pin/setup:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Set or reset transaction PIN after OTP verification.
+      responses:
+        "201":
+          description: PIN configured.
+        "403":
+          description: OTP/MFA required or failed.
+  /auth/pin/verify:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Verify transaction PIN.
+      responses:
+        "200":
+          description: PIN verified.
+        "401":
+          description: PIN invalid.
+        "429":
+          description: Rate limited.
+  /auth/devices:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Register or update a device fingerprint.
+      responses:
+        "201":
+          description: Device registered.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [password]
+      properties:
+        phone_e164:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 12
+        first_name:
+          type: string
+        last_name:
+          type: string
+        country_code:
+          type: string
+        device:
+          $ref: "#/components/schemas/Device"
+    Device:
+      type: object
+      required: [device_fingerprint]
+      properties:
+        device_fingerprint:
+          type: string
+        device_name:
+          type: string
+        platform:
+          type: string
+        app_version:
+          type: string
+

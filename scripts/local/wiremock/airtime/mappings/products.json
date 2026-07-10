@@ -1,0 +1,28 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/airtime/products"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "provider": "mock-airtime",
+      "products": [
+        {
+          "network": "MTN",
+          "product_code": "MTN_AIRTIME",
+          "currency": "NGN"
+        },
+        {
+          "network": "AIRTEL",
+          "product_code": "AIRTEL_AIRTIME",
+          "currency": "NGN"
+        }
+      ]
+    }
+  }
+}
+

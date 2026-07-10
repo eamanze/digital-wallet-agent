@@ -1,0 +1,19 @@
+{
+  "name": "@wallet/wallet-service",
+  "version": "0.1.0",
+  "type": "commonjs",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/*.test.js",
+    "test:unit": "node --test test/*.test.js",
+    "test:integration": "node --test test/*.integration.test.js"
+  },
+  "dependencies": {
+    "@wallet/common": "file:../../packages/common",
+    "express": "^4.21.1",
+    "helmet": "^8.0.0",
+    "zod": "^3.23.8"
+  }
+}
+

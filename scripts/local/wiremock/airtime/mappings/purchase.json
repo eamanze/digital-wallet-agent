@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/airtime/purchase"
+  },
+  "response": {
+    "status": 202,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "status": "pending",
+      "provider": "mock-airtime",
+      "provider_reference": "airtime-{{randomValue type='UUID'}}"
+    }
+  }
+}
+

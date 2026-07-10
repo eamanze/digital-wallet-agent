@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathTemplate": "/payments/status/{reference}"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "status": "successful",
+      "provider": "mock-payment",
+      "provider_reference": "{{request.pathSegments.[2]}}",
+      "amount_minor": 100000,
+      "currency": "NGN"
+    }
+  }
+}
+

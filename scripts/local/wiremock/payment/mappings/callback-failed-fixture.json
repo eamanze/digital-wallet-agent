@@ -1,0 +1,22 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/callbacks/failed-fixture"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "event": "payment.failed",
+      "provider": "mock-payment",
+      "provider_reference": "pay-local-failed",
+      "callback_id": "cb-{{randomValue type='UUID'}}",
+      "amount_minor": 100000,
+      "currency": "NGN",
+      "signature": "local-dev-signature"
+    }
+  }
+}
+

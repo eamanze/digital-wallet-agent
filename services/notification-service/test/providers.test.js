@@ -1,0 +1,2 @@
+const test = require("node:test"); const assert = require("node:assert/strict"); const { MockEmailProvider, MockSmsProvider, MockPushProvider } = require("../src/providers");
+test("all local delivery providers return message IDs", async () => { for (const Provider of [MockEmailProvider, MockSmsProvider, MockPushProvider]) { const result = await new Provider().send({ notification_id: "n1" }); assert.equal(result.status, "sent"); assert.match(result.provider_message_id, /^(email|sms|push)-n1$/); } });

@@ -1,0 +1,14 @@
+{
+  "name": "@wallet/common",
+  "version": "0.1.0",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1",
+    "pino": "^9.5.0",
+    "redis": "^4.7.0",
+    "zod": "^3.23.8"
+  }
+}

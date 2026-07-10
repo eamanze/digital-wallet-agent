@@ -1,0 +1,38 @@
+{
+  "name": "digital-wallet-agent",
+  "private": true,
+  "type": "commonjs",
+  "workspaces": [
+    "packages/common",
+    "services/user-service",
+    "services/auth-service",
+    "services/kyc-service",
+    "services/ledger-service",
+    "services/wallet-service",
+    "services/limits-service",
+    "services/fee-service",
+    "services/fraud-service",
+    "services/transaction-service",
+    "services/payment-integration-service",
+    "services/notification-service"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "test:unit": "npm run test:unit --workspaces --if-present",
+    "test:integration": "npm run test:integration --workspaces --if-present",
+    "start:user": "npm --workspace services/user-service start",
+    "start:auth": "npm --workspace services/auth-service start",
+    "start:kyc": "npm --workspace services/kyc-service start",
+    "start:ledger": "npm --workspace services/ledger-service start",
+    "start:wallet": "npm --workspace services/wallet-service start"
+    ,"start:limits": "npm --workspace services/limits-service start"
+    ,"start:fees": "npm --workspace services/fee-service start"
+    ,"start:fraud": "npm --workspace services/fraud-service start"
+    ,"start:transactions": "npm --workspace services/transaction-service start"
+    ,"start:payments": "npm --workspace services/payment-integration-service start"
+    ,"start:notifications": "npm --workspace services/notification-service start"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

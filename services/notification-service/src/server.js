@@ -1,0 +1,1 @@
+const { createApp } = require("./app"); const { getConfig, createLogger } = require("@wallet/common"); const config = getConfig("notification-service"); const { app } = createApp({ config, logger: createLogger("notification-service") }); app.listen(config.port, () => createLogger("notification-service").info({ port: config.port }, "notification-service listening"));

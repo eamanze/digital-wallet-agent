@@ -1,0 +1,123 @@
+openapi: 3.0.3
+info:
+  title: Wallet Service API
+  version: 0.1.0
+servers:
+  - url: http://localhost:3005
+security:
+  - bearerAuth: []
+paths:
+  /health/live:
+    get:
+      security: []
+      responses:
+        "200":
+          description: Service is alive.
+  /health/ready:
+    get:
+      security: []
+      responses:
+        "200":
+          description: Service dependencies are ready.
+        "503":
+          description: Service is not ready.
+  /wallets:
+    post:
+      summary: Create a wallet and linked ledger account.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWallet"
+      responses:
+        "201":
+          description: Wallet created or existing wallet returned.
+  /wallets/{id}:
+    get:
+      summary: Get wallet metadata.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Wallet.
+        "404":
+          description: Wallet not found.
+  /wallets/{id}/balance:
+    get:
+      summary: Get ledger-backed wallet balance and refresh projection.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Ledger-backed balance.
+  /wallets/{id}/statement:
+    get:
+      summary: Get wallet statement from ledger account entries.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Wallet statement.
+  /wallets/{id}/freeze:
+    post:
+      summary: Freeze wallet.
+      responses:
+        "200":
+          description: Wallet frozen.
+  /wallets/{id}/unfreeze:
+    post:
+      summary: Unfreeze wallet.
+      responses:
+        "200":
+          description: Wallet active.
+        "409":
+          description: Closed wallet cannot be reopened.
+  /wallets/{id}/close:
+    post:
+      summary: Close wallet.
+      responses:
+        "200":
+          description: Wallet closed.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CreateWallet:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        currency:
+          type: string
+          default: NGN
+        metadata:
+          type: object
+
