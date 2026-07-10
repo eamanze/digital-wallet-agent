@@ -1,0 +1,18 @@
+name: ECS Rollback
+on:
+  workflow_dispatch:
+    inputs:
+      environment: { required: true, type: choice, options: [dev, staging, prod] }
+      service: { required: true, type: string }
+      task_definition: { required: true, type: string, description: Previous ECS task definition ARN or family:revision }
+permissions: { contents: read, id-token: write }
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with: { role-to-assume: '${{ secrets.DEPLOY_ROLE_ARN }}', aws-region: '${{ vars.AWS_REGION }}' }
+      - run: aws ecs update-service --cluster "wallet-${{ inputs.environment }}" --service "${{ inputs.service }}" --task-definition "${{ inputs.task_definition }}" --force-new-deployment
+      - run: aws ecs wait services-stable --cluster "wallet-${{ inputs.environment }}" --services "${{ inputs.service }}"
+      - run: curl --fail --retry 10 --retry-delay 5 "${{ vars.SMOKE_BASE_URL }}/health/live"

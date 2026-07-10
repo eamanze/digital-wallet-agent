@@ -1,0 +1,36 @@
+name: ECS Deployment
+on:
+  workflow_dispatch:
+    inputs:
+      environment: { required: true, type: choice, options: [dev, staging, prod] }
+      service: { required: true, type: string }
+permissions: { contents: read, id-token: write }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci
+      - run: npm test --workspace services/${{ inputs.service }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with: { role-to-assume: '${{ secrets.DEPLOY_ROLE_ARN }}', aws-region: '${{ vars.AWS_REGION }}' }
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: login-ecr
+      - name: Build and push immutable image
+        id: image
+        env: { REGISTRY: '${{ steps.login-ecr.outputs.registry }}' }
+        run: |
+          docker build --build-arg SERVICE=${{ inputs.service }} -t "$REGISTRY/${{ inputs.service }}:${GITHUB_SHA}" -f docker/Dockerfile.service .
+          docker push "$REGISTRY/${{ inputs.service }}:${GITHUB_SHA}"
+          echo "image=$REGISTRY/${{ inputs.service }}:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+      - name: Deploy ECS service
+        run: aws ecs update-service --cluster "wallet-${{ inputs.environment }}" --service "${{ inputs.service }}" --force-new-deployment
+      - name: Wait for healthy deployment
+        run: aws ecs wait services-stable --cluster "wallet-${{ inputs.environment }}" --services "${{ inputs.service }}"
+      - name: Smoke test
+        run: curl --fail --retry 10 --retry-delay 5 "${{ vars.SMOKE_BASE_URL }}/health/live"
+      - if: failure()
+        run: echo "Deployment failed; run rollback.yml with the previous image digest." 

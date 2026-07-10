@@ -1,0 +1,20 @@
+name: Service Build and Test
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [auth-service, user-service, kyc-service, ledger-service, wallet-service, limits-service, fee-service, fraud-service, transaction-service, payment-integration-service, notification-service, audit-service, reconciliation-service, admin-dashboard, api-gateway]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci
+      - run: npm test --workspace services/${{ matrix.service }}
+      - run: docker build --build-arg SERVICE=${{ matrix.service }} -t wallet/${{ matrix.service }}:${{ github.sha }} -f docker/Dockerfile.service .

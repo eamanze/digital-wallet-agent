@@ -1,0 +1,19 @@
+pipeline {
+  agent { label 'terraform-aws' }
+  options { timestamps(); disableConcurrentBuilds(); skipDefaultCheckout(true) }
+  parameters { choice(name: 'ENVIRONMENT', choices: ['dev', 'staging', 'prod'], description: 'Terraform environment'); booleanParam(name: 'APPLY', defaultValue: false, description: 'Apply after approval') }
+  environment { TF_IN_AUTOMATION = 'true'; AWS_REGION = credentials('wallet-aws-region'); TF_STATE_BUCKET = credentials('wallet-tf-state-bucket') }
+  stages {
+    stage('Checkout') { steps { checkout scm } }
+    stage('Terraform fmt') { steps { sh 'terraform fmt -check -recursive infrastructure/terraform' } }
+    stage('Terraform validate') { steps { sh "terraform -chdir=infrastructure/terraform/environments/${params.ENVIRONMENT} init -backend=false; terraform -chdir=infrastructure/terraform/environments/${params.ENVIRONMENT} validate" } }
+    stage('TFLint') { steps { sh 'tflint --init; tflint --recursive infrastructure/terraform' } }
+    stage('Checkov') { steps { sh 'checkov -d infrastructure/terraform --quiet --compact' } }
+    stage('tfsec') { steps { sh 'tfsec infrastructure/terraform --minimum-severity HIGH' } }
+    stage('Terraform plan') { steps { withAWS(credentials: 'wallet-aws-oidc', region: env.AWS_REGION) { sh "terraform -chdir=infrastructure/terraform/environments/${params.ENVIRONMENT} init -backend-config=bucket=$TF_STATE_BUCKET -backend-config=key=wallet/${params.ENVIRONMENT}.tfstate -backend-config=region=$AWS_REGION; terraform -chdir=infrastructure/terraform/environments/${params.ENVIRONMENT} plan -input=false -out=tfplan" } } }
+    stage('Approval') { when { expression { params.APPLY } } steps { input message: "Apply Terraform to ${params.ENVIRONMENT}?", ok: 'Apply' } }
+    stage('Terraform apply') { when { expression { params.APPLY } } steps { withAWS(credentials: 'wallet-aws-oidc', region: env.AWS_REGION) { sh "terraform -chdir=infrastructure/terraform/environments/${params.ENVIRONMENT} apply -input=false -auto-approve tfplan" } } }
+    stage('Output deployment values') { when { expression { params.APPLY } } steps { sh "terraform -chdir=infrastructure/terraform/environments/${params.ENVIRONMENT} output -json > terraform-${params.ENVIRONMENT}-outputs.json" } }
+  }
+  post { always { archiveArtifacts artifacts: 'terraform-*-outputs.json', allowEmptyArchive: true } }
+}

@@ -1,0 +1,41 @@
+name: Pull Request Validation
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+  security-events: write
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci
+      - name: Lint
+        run: npm run lint --if-present
+      - name: Unit and integration tests
+        run: npm test
+      - name: Contract tests
+        run: npm run test:contract --if-present
+      - name: Dependency vulnerability scan
+        run: npm audit --audit-level=high
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env: { GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
+      - name: Terraform format
+        run: terraform fmt -check -recursive infrastructure/terraform
+      - name: Terraform validate
+        run: |
+          for env in dev staging prod; do
+            terraform -chdir=infrastructure/terraform/environments/$env init -backend=false
+            terraform -chdir=infrastructure/terraform/environments/$env validate
+          done
+      - name: Terraform plan
+        run: terraform -chdir=infrastructure/terraform/environments/dev plan -input=false -lock=false -var-file=terraform.tfvars.example
+      - name: Build representative container
+        run: docker build --build-arg SERVICE=api-gateway -f docker/Dockerfile.service .
+      - name: Container vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        with: { image-ref: 'wallet-api-gateway:pr', format: table, exit-code: '1', severity: 'CRITICAL,HIGH', ignore-unfixed: true }

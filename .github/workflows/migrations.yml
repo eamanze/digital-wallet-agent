@@ -1,0 +1,32 @@
+name: Database Migration Validation
+on:
+  pull_request:
+    paths: ['infrastructure/db/migrations/**']
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  migration-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check migration numbering and transaction wrappers
+        shell: bash
+        run: |
+          set -euo pipefail
+          previous=0
+          for file in infrastructure/db/migrations/*.sql; do
+            number=${file##*/}; number=${number%%_*}
+            test "$number" -gt "$previous"
+            grep -q 'BEGIN;' "$file"
+            grep -q 'COMMIT;' "$file"
+            previous=$number
+          done
+      - name: Start PostgreSQL for migration dry run
+        run: docker run --name wallet-migration-db -e POSTGRES_PASSWORD=wallet -e POSTGRES_USER=wallet -e POSTGRES_DB=wallet -d postgres:16-alpine
+      - run: sleep 5
+      - name: Apply migrations in order
+        run: |
+          for file in infrastructure/db/migrations/*.sql; do
+            docker cp "$file" wallet-migration-db:/tmp/migration.sql
+            docker exec wallet-migration-db psql -U wallet -d wallet -v ON_ERROR_STOP=1 -f /tmp/migration.sql
+          done

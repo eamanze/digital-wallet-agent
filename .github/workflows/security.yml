@@ -1,0 +1,20 @@
+name: Security Scanning
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  security-events: write
+jobs:
+  scans:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gitleaks/gitleaks-action@v2
+        env: { GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
+      - uses: aquasecurity/trivy-action@master
+        with: { scan-type: fs, scan-ref: '.', severity: 'CRITICAL,HIGH', ignore-unfixed: true, exit-code: '1' }
+      - uses: github/codeql-action/init@v3
+        with: { languages: javascript }
+      - uses: github/codeql-action/analyze@v3
