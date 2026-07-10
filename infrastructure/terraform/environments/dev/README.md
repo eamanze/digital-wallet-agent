@@ -1,24 +1,3 @@
-# Dev Environment
+# Dev environment
 
-## Purpose
-
-Defines development cloud infrastructure for rapid integration and testing.
-
-## Owner
-
-Cloud platform engineering.
-
-## What Should Go Inside
-
-- Dev Terraform root configuration
-- Lower-cost resource sizing
-- Non-production networking
-- Dev service wiring
-
-## What Should Not Go Inside
-
-- Production credentials
-- Production data
-- Undocumented deviations from shared modules
-- Terraform state files
-
+Copy `terraform.tfvars.example` to a local `.tfvars` file, provide `TF_VAR_db_password` from a secret manager, then run `terraform init`, `terraform validate`, and `terraform plan`. Dev uses smaller instances, two AZs, and no RDS deletion protection.

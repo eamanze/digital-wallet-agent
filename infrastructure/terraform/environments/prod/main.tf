@@ -1,0 +1,1 @@
+module "environment" { source="../dev" aws_region=var.aws_region environment="prod" name=var.name vpc_cidr=var.vpc_cidr azs=var.azs db_instance_class=var.db_instance_class redis_node_type=var.redis_node_type db_password=var.db_password queues=var.queues services=var.services multi_az=true deletion_protection=true }

@@ -1,0 +1,9 @@
+variable "aws_region" { type=string default="us-east-1" }
+variable "name" { type=string default="wallet-prod" }
+variable "vpc_cidr" { type=string default="10.30.0.0/16" }
+variable "azs" { type=list(string) default=["us-east-1a","us-east-1b","us-east-1c"] }
+variable "db_instance_class" { type=string default="db.r6g.large" }
+variable "redis_node_type" { type=string default="cache.r6g.large" }
+variable "db_password" { type=string sensitive=true }
+variable "queues" { type=set(string) default=["audit-events","notification-jobs","provider-callbacks","reconciliation-jobs","fraud-enrichment"] }
+variable "services" { type=map(object({image=string,port=number,cpu=number,memory=number,desired_count=number})) default={} }
