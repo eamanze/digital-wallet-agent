@@ -14,7 +14,8 @@
     "services/fraud-service",
     "services/transaction-service",
     "services/payment-integration-service",
-    "services/notification-service"
+    "services/notification-service",
+    "services/audit-service"
   ],
   "scripts": {
     "test": "npm run test --workspaces --if-present",
@@ -31,6 +32,7 @@
     ,"start:transactions": "npm --workspace services/transaction-service start"
     ,"start:payments": "npm --workspace services/payment-integration-service start"
     ,"start:notifications": "npm --workspace services/notification-service start"
+    ,"start:audit": "npm --workspace services/audit-service start"
   },
   "engines": {
     "node": ">=20"

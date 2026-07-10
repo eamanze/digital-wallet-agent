@@ -1,0 +1,1 @@
+const { createApp } = require("./app"); const { getConfig, createLogger } = require("@wallet/common"); const config=getConfig("audit-service"); const {app}=createApp({config,logger:createLogger("audit-service")}); app.listen(config.port,()=>createLogger("audit-service").info({port:config.port},"audit-service listening"));

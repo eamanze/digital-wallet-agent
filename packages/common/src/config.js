@@ -28,7 +28,8 @@ function getConfig(serviceName) {
     "fraud-service": 3008,
     "transaction-service": 3009,
     "payment-integration-service": 3010,
-    "notification-service": 3011
+    "notification-service": 3011,
+    "audit-service": 3012
   };
   return {
     serviceName,

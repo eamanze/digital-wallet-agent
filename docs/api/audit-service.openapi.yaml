@@ -1,0 +1,12 @@
+openapi: 3.0.3
+info: { title: Audit Service API, version: 0.1.0 }
+servers: [{ url: http://localhost:3012 }]
+security: [{ bearerAuth: [] }]
+paths:
+  /health/live: { get: { security: [], responses: { '200': { description: Alive } } } }
+  /health/ready: { get: { security: [], responses: { '200': { description: Ready } } } }
+  /audit/events:
+    post: { summary: Append an audit event, responses: { '201': { description: Stored }, '400': { description: Invalid event } } }
+    get: { summary: Search audit events, parameters: [{ in: query, name: actor_id, schema: { type: string } }, { in: query, name: action, schema: { type: string } }, { in: query, name: service_name, schema: { type: string } }, { in: query, name: resource_type, schema: { type: string } }, { in: query, name: event_type, schema: { type: string } }, { in: query, name: from, schema: { type: string, format: date-time } }, { in: query, name: to, schema: { type: string, format: date-time } }], responses: { '200': { description: Events } } }
+  /audit/events/{id}: { get: { summary: Get an audit event, responses: { '200': { description: Event }, '404': { description: Not found } } } }
+components: { securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } } }
