@@ -6,6 +6,7 @@ module.exports = {
   ...require("./security"),
   ...require("./audit"),
   ...require("./events"),
-  ...require("./http")
+  ...require("./http"),
+  ...require("./metrics"),
+  ...require("./tracing")
 };
-
