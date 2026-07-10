@@ -30,7 +30,8 @@ function getConfig(serviceName) {
     "payment-integration-service": 3010,
     "notification-service": 3011,
     "audit-service": 3012,
-    "reconciliation-service": 3013
+    "reconciliation-service": 3013,
+    "admin-dashboard": 3014
   };
   return {
     serviceName,

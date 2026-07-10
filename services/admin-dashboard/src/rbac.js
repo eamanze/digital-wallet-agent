@@ -1,0 +1,4 @@
+const permissions={support_agent:["users:read","transactions:read","wallets:read"],compliance_officer:["users:read","kyc:read","kyc:decide","audit:read"],finance_ops:["transactions:read","ledger:read","reconciliation:read","reports:export","reversal:request"],fraud_analyst:["users:read","transactions:read","fraud:read","manual_review:decide"],super_admin:["*"] ,auditor:["audit:read","reports:export","reconciliation:read"]};
+function hasPermission(roles,permission){return (roles||[]).some((role)=>permissions[role]?.includes("*")||permissions[role]?.includes(permission));}
+function canApprove(roles,action){if(action.includes("kyc"))return hasPermission(roles,"kyc:decide");if(action.includes("reversal"))return hasPermission(roles,"reversal:request");return hasPermission(roles,"manual_review:decide")||hasPermission(roles,"users:read");}
+module.exports={permissions,hasPermission,canApprove};

@@ -1,0 +1,1 @@
+const {createApp}=require("./app");const {getConfig,createLogger}=require("@wallet/common");const config=getConfig("admin-dashboard");const {app}=createApp({config,logger:createLogger("admin-dashboard")});app.listen(config.port,()=>createLogger("admin-dashboard").info({port:config.port},"admin-dashboard listening"));

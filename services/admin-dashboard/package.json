@@ -1,0 +1,1 @@
+{"name":"@wallet/admin-dashboard","version":"0.1.0","private":true,"type":"commonjs","main":"src/server.js","scripts":{"start":"node src/server.js","test":"node --test test/*.test.js"},"dependencies":{"@wallet/common":"file:../../packages/common","bcryptjs":"^2.4.3","express":"^4.21.1","helmet":"^8.0.0","jsonwebtoken":"^9.0.2","zod":"^3.23.8"}}

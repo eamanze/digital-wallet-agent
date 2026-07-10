@@ -1,0 +1,16 @@
+openapi: 3.0.3
+info: { title: Admin Dashboard API, version: 0.1.0 }
+servers: [{ url: http://localhost:3014 }]
+paths:
+  /health/live: { get: { responses: { '200': { description: Alive } } } }
+  /admin/login: { post: { security: [], summary: Admin password + MFA login, responses: { '200': { description: Access token } } } }
+  /admin/users: { get: { summary: View masked users, responses: { '200': { description: Users } } } }
+  /admin/transactions: { get: { summary: View transactions, responses: { '200': { description: Transactions } } } }
+  /admin/ledger: { get: { summary: View ledger journals, responses: { '200': { description: Ledger entries } } } }
+  /admin/fraud-cases: { get: { summary: View fraud cases, responses: { '200': { description: Cases } } } }
+  /admin/reconciliation-exceptions: { get: { summary: View reconciliation exceptions, responses: { '200': { description: Exceptions } } } }
+  /admin/audit-logs: { get: { summary: View audit logs, responses: { '200': { description: Audit logs } } } }
+  /admin/reports/export: { get: { summary: Export a masked report, responses: { '200': { description: CSV report } } } }
+  /admin/actions: { post: { summary: Request a maker-checker action, responses: { '201': { description: Approval request } } } }
+  /admin/approvals/{id}/{decision}: { post: { summary: Approve or reject an action, responses: { '200': { description: Decision } } } }
+components: { securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } } }
