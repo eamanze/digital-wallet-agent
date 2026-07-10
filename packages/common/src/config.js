@@ -34,9 +34,10 @@ function getConfig(serviceName) {
     "admin-dashboard": 3014,
     "api-gateway": 8080
   };
-  return {
+  const environment = getEnv("NODE_ENV", "development");
+  const config = {
     serviceName,
-    environment: getEnv("NODE_ENV", "development"),
+    environment,
     port: getNumberEnv("PORT", defaultPorts[serviceName] || 3000),
     databaseUrl: getEnv("DATABASE_URL", "postgresql://wallet:wallet_dev_password@localhost:5432/wallet_dev"),
     redisUrl: getEnv("REDIS_URL", "redis://localhost:6379"),
@@ -72,6 +73,12 @@ function getConfig(serviceName) {
     pinAttemptLimit: getNumberEnv("PIN_ATTEMPT_LIMIT", 5),
     pinAttemptWindowSeconds: getNumberEnv("PIN_ATTEMPT_WINDOW_SECONDS", 3600)
   };
+  if (environment === "production") {
+    for (const name of ["DATABASE_URL", "REDIS_URL", "JWT_ACCESS_SECRET", "JWT_REFRESH_SECRET", "PROVIDER_WEBHOOK_SECRET"]) {
+      if (!process.env[name] || /change-me|local-/.test(process.env[name])) throw new Error(`${name} must be supplied by Secrets Manager in production`);
+    }
+  }
+  return config;
 }
 
 module.exports = { getEnv, getNumberEnv, getConfig };

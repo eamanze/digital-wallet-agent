@@ -69,6 +69,23 @@ function isValidPin(pin) {
   return typeof pin === "string" && /^[0-9]{4,6}$/.test(pin);
 }
 
+function maskIdentifier(value, visible = 4) {
+  if (value === undefined || value === null) return value;
+  const text = String(value);
+  if (text.length <= visible) return "***";
+  return `${"*".repeat(Math.max(3, text.length - visible))}${text.slice(-visible)}`;
+}
+
+function deviceFingerprint(input = {}) {
+  return sha256([input.deviceId, input.userAgent, input.os, input.appVersion].filter(Boolean).join("|"));
+}
+
+// Adapter seam: replace with a provider-backed reputation client without changing callers.
+async function checkIpReputation(ip, client) {
+  if (client && typeof client.lookup === "function") return client.lookup(ip);
+  return { ip: maskIdentifier(ip, 3), risk: "unknown", source: "placeholder" };
+}
+
 module.exports = {
   hashSecret,
   verifySecret,
@@ -80,5 +97,8 @@ module.exports = {
   signRefreshToken,
   verifyRefreshToken,
   isStrongPassword,
-  isValidPin
+  isValidPin,
+  maskIdentifier,
+  deviceFingerprint,
+  checkIpReputation
 };

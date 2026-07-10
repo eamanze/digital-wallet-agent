@@ -15,6 +15,11 @@ jobs:
         env: { GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
       - uses: aquasecurity/trivy-action@master
         with: { scan-type: fs, scan-ref: '.', severity: 'CRITICAL,HIGH', ignore-unfixed: true, exit-code: '1' }
+      - name: IaC scan
+        uses: bridgecrewio/checkov-action@v12
+        with: { directory: infrastructure/terraform, framework: terraform, soft_fail: false }
+      - name: Dependency review
+        uses: actions/dependency-review-action@v4
       - uses: github/codeql-action/init@v3
         with: { languages: javascript }
       - uses: github/codeql-action/analyze@v3
