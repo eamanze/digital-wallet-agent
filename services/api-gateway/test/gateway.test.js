@@ -1,0 +1,4 @@
+const test=require("node:test");const assert=require("node:assert/strict");const {isMoney,requiresPin,normalizeError}=require("../src/proxy");const {createLimiter}=require("../src/app");
+test("money routes require idempotency and PIN policy",()=>{assert.equal(isMoney("POST","/transactions/transfers"),true);assert.equal(requiresPin("/transactions/transfers"),true);assert.equal(requiresPin("/transactions/fund-wallet"),false);});
+test("upstream errors are normalized without leaking internals",()=>{const error=normalizeError(502,{error:{code:"SECRET_PROVIDER_ERROR",message:"db password"}},"r1");assert.equal(error.request_id,"r1");assert.equal(error.error.message,"Upstream service unavailable");});
+test("rate limiter blocks after configured limit",()=>{const limiter=createLimiter(2,60000);assert.equal(limiter("ip"),true);assert.equal(limiter("ip"),true);assert.equal(limiter("ip"),false);});

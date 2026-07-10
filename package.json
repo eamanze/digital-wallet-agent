@@ -17,7 +17,8 @@
     "services/notification-service",
     "services/audit-service",
     "services/reconciliation-service",
-    "services/admin-dashboard"
+    "services/admin-dashboard",
+    "services/api-gateway"
   ],
   "scripts": {
     "test": "npm run test --workspaces --if-present",
@@ -37,6 +38,7 @@
     ,"start:audit": "npm --workspace services/audit-service start"
     ,"start:reconciliation": "npm --workspace services/reconciliation-service start"
     ,"start:admin": "npm --workspace services/admin-dashboard start"
+    ,"start:gateway": "npm --workspace services/api-gateway start"
   },
   "engines": {
     "node": ">=20"

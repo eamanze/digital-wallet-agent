@@ -1,0 +1,17 @@
+openapi: 3.0.3
+info: { title: Digital Wallet Public API, version: 1.0.0 }
+servers: [{ url: http://localhost:8080/api/v1 }]
+paths:
+  /auth/login: { post: { security: [], summary: Login, responses: { '200': { description: Auth response } } } }
+  /auth/register: { post: { security: [], summary: Register, responses: { '201': { description: Registered } } } }
+  /users/me: { get: { summary: Current user, responses: { '200': { description: User } } } }
+  /kyc/profile: { post: { summary: Submit KYC, responses: { '201': { description: Submitted } } } }
+  /wallets: { post: { summary: Create wallet, responses: { '201': { description: Wallet } } } }
+  /wallets/{id}/balance: { get: { summary: Get wallet balance, responses: { '200': { description: Balance } } } }
+  /transactions/transfers: { post: { summary: Wallet transfer, parameters: [{ in: header, name: Idempotency-Key, required: true, schema: { type: string } }], responses: { '200': { description: Transaction } } } }
+  /transactions/fund-wallet: { post: { summary: Initiate funding, parameters: [{ in: header, name: Idempotency-Key, required: true, schema: { type: string } }], responses: { '201': { description: Pending transaction } } } }
+  /transactions/withdrawals: { post: { summary: Initiate withdrawal, parameters: [{ in: header, name: Idempotency-Key, required: true, schema: { type: string } }], responses: { '201': { description: Pending transaction } } } }
+  /transactions/bills: { post: { summary: Bill payment, parameters: [{ in: header, name: Idempotency-Key, required: true, schema: { type: string } }], responses: { '201': { description: Pending transaction } } } }
+  /transactions/airtime: { post: { summary: Airtime purchase, parameters: [{ in: header, name: Idempotency-Key, required: true, schema: { type: string } }], responses: { '201': { description: Pending transaction } } } }
+  /notifications: { get: { summary: Notification history, responses: { '200': { description: Notifications } } } }
+components: { securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } } }

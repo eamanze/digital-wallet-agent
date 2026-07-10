@@ -31,7 +31,8 @@ function getConfig(serviceName) {
     "notification-service": 3011,
     "audit-service": 3012,
     "reconciliation-service": 3013,
-    "admin-dashboard": 3014
+    "admin-dashboard": 3014,
+    "api-gateway": 8080
   };
   return {
     serviceName,
@@ -49,6 +50,10 @@ function getConfig(serviceName) {
     limitsServiceUrl: getEnv("LIMITS_SERVICE_URL", "http://localhost:3006"),
     feeServiceUrl: getEnv("FEE_SERVICE_URL", "http://localhost:3007"),
     fraudServiceUrl: getEnv("FRAUD_SERVICE_URL", "http://localhost:3008"),
+    transactionServiceUrl: getEnv("TRANSACTION_SERVICE_URL", "http://localhost:3009"),
+    paymentIntegrationServiceUrl: getEnv("PAYMENT_INTEGRATION_SERVICE_URL", "http://localhost:3010"),
+    notificationServiceUrl: getEnv("NOTIFICATION_SERVICE_URL", "http://localhost:3011"),
+    adminDashboardUrl: getEnv("ADMIN_DASHBOARD_URL", "http://localhost:3014"),
     providerServiceUrl: getEnv("PROVIDER_SERVICE_URL", "http://localhost:8092"),
     providerWebhookSecret: getEnv("PROVIDER_WEBHOOK_SECRET", "local-provider-webhook-secret"),
     providerTimeoutMs: getNumberEnv("PROVIDER_TIMEOUT_MS", 5000),
@@ -57,6 +62,8 @@ function getConfig(serviceName) {
     providerCircuitResetMs: getNumberEnv("PROVIDER_CIRCUIT_RESET_MS", 30000),
     notificationMaxAttempts: getNumberEnv("NOTIFICATION_MAX_ATTEMPTS", 3),
     notificationRetryDelayMs: getNumberEnv("NOTIFICATION_RETRY_DELAY_MS", 30000),
+    gatewayRateLimit: getNumberEnv("GATEWAY_RATE_LIMIT", 120),
+    gatewayRateWindowMs: getNumberEnv("GATEWAY_RATE_WINDOW_MS", 60000),
     otpTtlSeconds: getNumberEnv("OTP_TTL_SECONDS", 300),
     otpRequestLimit: getNumberEnv("OTP_REQUEST_LIMIT", 5),
     otpRequestWindowSeconds: getNumberEnv("OTP_REQUEST_WINDOW_SECONDS", 3600),

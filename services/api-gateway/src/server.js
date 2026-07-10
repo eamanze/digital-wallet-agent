@@ -1,0 +1,1 @@
+const {createApp}=require("./app");const {getConfig,createLogger}=require("@wallet/common");const config=getConfig("api-gateway");const {app}=createApp({config,logger:createLogger("api-gateway")});app.listen(config.port,()=>createLogger("api-gateway").info({port:config.port},"api-gateway listening"));
