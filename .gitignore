@@ -16,6 +16,8 @@ pnpm-debug.log*
 *.tsbuildinfo
 dist/
 build/
+.next/
+out/
 coverage/
 .nyc_output/
 
@@ -60,3 +62,5 @@ Thumbs.db
 *.lcov
 test-results/
 playwright-report/
+
+my_prompt.md

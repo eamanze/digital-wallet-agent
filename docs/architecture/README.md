@@ -1,5 +1,11 @@
 # Architecture Docs
 
+## Primary diagrams
+
+- [Full system architecture](full-system-architecture.md)
+- [System context](system-context.md)
+- [Container architecture](container-architecture.md)
+
 ## Purpose
 
 Stores system architecture, service boundaries, diagrams, and architecture decisions.
@@ -22,4 +28,3 @@ Architecture team.
 - Secrets
 - Outdated diagrams without versioning
 - Raw production data
-
