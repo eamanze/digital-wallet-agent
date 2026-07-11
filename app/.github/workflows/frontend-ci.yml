@@ -1,0 +1,29 @@
+name: frontend-ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci || npm install
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build
+      - name: Check for secrets
+        run: |
+          if grep -R "AKIA\|SECRET_ACCESS_KEY\|BEGIN PRIVATE KEY" -n src .env.example; then
+            echo "Potential secret detected" && exit 1
+          fi
